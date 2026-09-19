@@ -27,6 +27,7 @@ async def say_hello(ctx: inngest.Context) -> str:
 @inngest_client.create_function(
     fn_id="make-report",
     trigger=inngest.TriggerEvent(event="report/requested"),
+    retries=2,
 )
 async def make_report(ctx: inngest.Context) -> dict:
     report_id = ctx.event.data["id"]
@@ -35,6 +36,8 @@ async def make_report(ctx: inngest.Context) -> dict:
     await ctx.step.sleep("do-the-slow-work", 8)
 
     def build():
+        if topic == "fail":
+            raise Exception("The report oven is broken!")
         return {
             "id": report_id,
             "topic": topic,
